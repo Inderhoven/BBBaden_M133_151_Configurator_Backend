@@ -91,3 +91,12 @@ class LoginSessionView(APIView):
             response.status_code = 401
             
             return response
+        
+class LogoutSessionView(APIView):
+    def post(self, request):
+        request.session.flush()
+
+        response = JsonResponse({'message': 'Logged out successfully.'})
+        response.delete_cookie('sessionid')
+
+        return response
