@@ -137,3 +137,6 @@ CORS_ALLOW_CREDENTIALS = True
 # https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+
+JWT_SECRET_KEY = 'xgs2Qv2SDU^k6WGQ**wuE76u!^CM5rnPt!xnX*4oTxU@b'
