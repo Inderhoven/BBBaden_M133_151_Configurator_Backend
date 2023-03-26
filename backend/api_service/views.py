@@ -2,6 +2,7 @@ from django.contrib.auth import authenticate
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from django.http import JsonResponse
+from django.contrib.sessions.models import Session
 
 # Create your views here.
 class CharacterSessionView(APIView):
@@ -84,3 +85,16 @@ class LogoutSessionView(APIView):
         response.delete_cookie('sessionid')
 
         return response
+    
+class UserAuth(APIView):
+    def post(self, request):
+        session_id = request.COOKIES.get('sessionid')
+
+        if not session_id:
+            return Response(status=401)
+        
+        try:
+            session = Session.objects.get(session_key = session_id)
+            return Response({'message': 'success'}, status=200)
+        except Session.DoesNotExist:
+            return Response({'message': 'Not Authorized'}, status=401)
