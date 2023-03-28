@@ -34,6 +34,7 @@ class CharacterSessionView(APIView):
 
     def post(self, request):
         session_key = request.COOKIES.get('sessionid')
+        print("Character Post session: ", session_key)
         if not session_key:
             response = {
                 "message": "no Session found"
@@ -69,7 +70,6 @@ class LoginSessionView(APIView):
             session_key = request.session.session_key
             response = JsonResponse({'sessionid': session_key})
             response.set_cookie('sessionid', session_key)
-            
             return response
         else:
             response = Response()
@@ -89,7 +89,7 @@ class LogoutSessionView(APIView):
 class UserAuth(APIView):
     def post(self, request):
         session_id = request.COOKIES.get('sessionid')
-        print(session_id)
+        print("SessionId Cookie: ",session_id)
 
         if not session_id:
             return Response(status=401)

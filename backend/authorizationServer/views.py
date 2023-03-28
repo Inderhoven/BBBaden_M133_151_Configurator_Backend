@@ -20,6 +20,7 @@ class CharacterView(APIView):
 
     def _authenticate_user(self, request):
         auth_header = authentication.get_authorization_header(request)
+        # print("JWT Character Post header: ", auth_header)
         if not auth_header:
             raise exceptions.AuthenticationFailed('Authorization header is missing')
         
@@ -89,13 +90,16 @@ class AuthUser(APIView):
 
     def _authenticate_user(self, request):
         auth_header = authentication.get_authorization_header(request)
+        print("JWT User Auth Header: ", auth_header)
         if not auth_header:
+            print("Header Failed")
             raise exceptions.AuthenticationFailed('Authorization header is missing')
         
         try:
             token = auth_header.decode('utf-8')
             payload = jwt.decode(token, settings.JWT_SECRET_KEY, algorithms=['HS256'])
             user = User.objects.get(id=payload['userId'])
+            # print("User: ", user)
 
             #check if the token has expired
             if 'exp' in payload:
@@ -103,12 +107,15 @@ class AuthUser(APIView):
                 print("time", expiration_time)
                 print("time2", datetime.utcnow().replace(tzinfo=pytz.UTC))
                 if datetime.utcnow().replace(tzinfo=pytz.UTC) > expiration_time:
+                    print("time ran out")
                     raise exceptions.AuthenticationFailed('Token has expired')
         except jwt.exceptions.DecodeError:
+            print("Decode Failed")
             raise exceptions.AuthenticationFailed('Invalid authentication token')
         except User.DoesNotExist:
+            print("User Failed")
             raise exceptions.AuthenticationFailed('User not found')
-        
+        print("Auth ok")
         return user
     
     def post(self, request):
@@ -131,22 +138,27 @@ class RefreshToken(APIView):
         print("Headers", request.COOKIES)
         print("Refresh Token: ", refresh_token)
         if refresh_token is None:
+            print("Refresh Token failed")
             raise exceptions.AuthenticationFailed('Refresh token is missing')
         
         try:
             payload = jwt.decode(refresh_token, settings.JWT_REFRESH_SECRET_KEY, algorithms=['HS256'])
             user = User.objects.get(id=payload['userId'])
         except jwt.exceptions.DecodeError:
+            print("refresh decode failed")
             raise exceptions.AuthenticationFailed('Invalid refresh token')
         except User.DoesNotExist:
+            print("refresh user failed")
             raise exceptions.AuthenticationFailed('User not found')
         
         if not user.is_active:
+            print("refresh user not active")
             raise exceptions.AuthenticationFailed('User is inactive')
         
         access_token_expiry = datetime.utcnow().replace(tzinfo=pytz.UTC) + timedelta(minutes=settings.JWT_ACCESS_TOKEN_EXPIRATION_MINUTES)
-        access_token_payload = {'userId' : user.id, 'exp': int(access_token_expiry.timestamp()), 'type': 'access'}
+        access_token_payload = {'userId' : user.id, 'exp': access_token_expiry, 'type': 'access'}
         access_token = jwt.encode(access_token_payload, settings.JWT_SECRET_KEY, algorithm='HS256')
+        print("new jwt: ", access_token)
 
         response = Response({'userId' : user.id, 'type': 'access'})
         response.set_cookie('jwt', access_token)

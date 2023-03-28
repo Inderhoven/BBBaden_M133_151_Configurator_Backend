@@ -40,8 +40,8 @@ class LoginView(APIView):
             refresh_token = jwt.encode(refresh_token_payload, settings.JWT_REFRESH_SECRET_KEY, algorithm='HS256')
 
             response = Response({'jwt' : access_token_payload, 'refresh': refresh_token_payload})
-            response.set_cookie('jwt', access_token, httponly=True)
-            response.set_cookie('refresh_token', refresh_token, httponly=True)
+            response.set_cookie('jwt', access_token)
+            response.set_cookie('refresh_token', refresh_token)
 
             return response
         else:
