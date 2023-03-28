@@ -89,6 +89,7 @@ class LogoutSessionView(APIView):
 class UserAuth(APIView):
     def post(self, request):
         session_id = request.COOKIES.get('sessionid')
+        print(session_id)
 
         if not session_id:
             return Response(status=401)
